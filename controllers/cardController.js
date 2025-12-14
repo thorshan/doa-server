@@ -56,7 +56,7 @@ const extractFurigana = (text) => {
  */
 export const createCard = async (req, res) => {
   try {
-    const { title, content, category, level } = req.body;
+    const { title, content, category, level, grammar } = req.body;
     const { cleanText, results } = extractFurigana(content);
     const card = await Card.create({
       title,
@@ -65,6 +65,7 @@ export const createCard = async (req, res) => {
       originalContent: content,
       content: cleanText,
       furigana: results,
+      grammar: grammar || [],
     });
     res.status(201).json({
       message: "Card created",
@@ -96,6 +97,10 @@ export const updateCard = async (req, res) => {
       card.content = cleanText;
       card.furigana = results;
     }
+    if (grammar !== undefined) {
+      card.grammar = grammar;
+    }
+
     await card.save();
     res.json({
       message: "Card updated",

@@ -1,5 +1,22 @@
 import mongoose from "mongoose";
 
+const GrammarSchema = new mongoose.Schema(
+  {
+    pattern: {
+      type: String,
+      required: true, 
+    },
+    meaning: {
+      type: String,
+      required: true, 
+    },
+    example: {
+      type: String, 
+    },
+  },
+  { _id: false }
+);
+
 const CardSchema = new mongoose.Schema(
   {
     title: {
@@ -25,8 +42,9 @@ const CardSchema = new mongoose.Schema(
         reading: String,
       },
     ],
+    grammar: [GrammarSchema],
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 export default mongoose.model("Card", CardSchema);
