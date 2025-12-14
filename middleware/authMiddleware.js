@@ -1,3 +1,4 @@
+import TokenBlacklist from "../models/TokenBlacklist.js";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 
@@ -12,13 +13,18 @@ export const authMiddleware = async (req, res, next) => {
 
   const token = authHeader.split(" ")[1];
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  if (!decoded)
-    return res.status(401).json({ message: "Invalid or expired token" });
-
-  const user = await User.findById(decoded.id);
-  if (!user) return res.status(401).json({ message: "User not found" });
-
-  req.user = user;
-  next();
+  try {
+    const blacklistedToken = await TokenBlacklist.findOne({ token });
+    if (blacklistedToken) {
+      return res.status(401).json({ message: "Token has been revoked." });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(401).json({ message: "User not found" });
+  
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token." });
+  }
 };

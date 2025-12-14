@@ -13,6 +13,7 @@ const __dirname = path.dirname(__filename);
 import authRoute from "./routes/authRoutes.js";
 import imageRoute from "./routes/imageRoute.js";
 import cardRoute from "./routes/cardRoutes.js";
+import userRoute from "./routes/userRoutes.js";
 
 import { connectDb } from "./config/database.js";
 connectDb();
@@ -27,5 +28,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoute);
 app.use("/api", cardRoute);
+app.use("/api/users", userRoute);
 
 export default app;
