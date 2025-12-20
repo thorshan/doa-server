@@ -30,12 +30,22 @@ const UserSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Image",
     },
+    level: {
+      type: String,
+      enum: ["Basic", "N5", "N4", "N3", "N2", "N1", "Business Japanese"],
+      default: null,
+    },
+    status: {
+      type: String,
+      enum: ["Learning", "Passed"],
+      default: "Learning",
+    },
     isActive: {
       type: Boolean,
       default: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const RESERVED_USERNAMES = ["admin", "superadmin", "user", "superuser"];
