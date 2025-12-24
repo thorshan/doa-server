@@ -44,17 +44,33 @@ export const getUserData = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
-    const existing = await User.findById(id);
-    if (!existing) {
+    const { name, username, image } = req.body;
+
+    const updateData = {};
+
+    if (name) updateData.name = name;
+    if (username) updateData.username = username;
+    if (image) updateData.image = image;
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: "No data provided to update" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { $set: updateData }
+    );
+
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    const user = await User.findByIdAndUpdate(id, updateData);
+
     res.json({ message: "User updated", user });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 /**
  * @description Update user level
