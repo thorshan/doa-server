@@ -4,10 +4,15 @@ const lessonSchema = new mongoose.Schema(
   {
     title: { type: String },
     level: { type: mongoose.Schema.Types.ObjectId, ref: "Level" },
-    module: { type: mongoose.Schema.Types.ObjectId, ref: "Module", required: true }, // grammar, reading, etc.
+    module: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Module",
+      required: true,
+    }, // grammar, reading, etc.
     grammarPatterns: [{ type: mongoose.Schema.Types.ObjectId, ref: "Grammar" }],
     kanji: [{ type: mongoose.Schema.Types.ObjectId, ref: "Kanji" }],
     vocabulary: [{ type: mongoose.Schema.Types.ObjectId, ref: "Vocabulary" }],
+    speaking: { type: mongoose.Schema.Types.ObjectId, ref: "Speaking" },
     contentBlocks: [
       {
         type: {

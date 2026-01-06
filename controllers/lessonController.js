@@ -7,7 +7,8 @@ export const getAllLessons = async (req, res) => {
       .populate("module")
       .populate("grammarPatterns")
       .populate("kanji")
-      .populate("vocabulary");
+      .populate("vocabulary")
+      .populate("speaking");
     res.json(lessons);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -21,7 +22,8 @@ export const getLessonById = async (req, res) => {
       .populate("module")
       .populate("grammarPatterns")
       .populate("kanji")
-      .populate("vocabulary");
+      .populate("vocabulary")
+      .populate("speaking");
     if (!lesson) return res.status(404).json({ error: "Lesson not found" });
     res.json(lesson);
   } catch (err) {
