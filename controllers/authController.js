@@ -18,7 +18,7 @@ const createToken = (id) =>
  */
 export const register = async (req, res) => {
   try {
-    const { name, email, username, password, level } = req.body;
+    const { name, email, username, password, level, image } = req.body;
     const existing = await User.findOne({ email });
     if (existing) res.status(402).json({ message: "User Already Exist." });
     const hashPassword = await bcrypt.hash(password, 10);
@@ -28,6 +28,7 @@ export const register = async (req, res) => {
       username,
       level,
       password: hashPassword,
+      image,
     });
     const token = createToken(user._id);
     res.json({
