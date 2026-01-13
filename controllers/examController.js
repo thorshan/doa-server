@@ -15,6 +15,7 @@ export const createExam = async (req, res) => {
 export const getAllExams = async (req, res) => {
   try {
     const exams = await Exam.find()
+      .populate("questions")
       .populate("level module")
       .sort({ createdAt: 1 });
 
@@ -42,7 +43,7 @@ export const getExam = async (req, res) => {
 /* ================= GET SINGLE EXAM ================= */
 export const getExamByLecture = async (req, res) => {
   try {
-    const exam = await Exam.findOne({ lesson: req.params.id})
+    const exam = await Exam.findOne({ lesson: req.params.id })
       .populate("questions")
       .populate("level module");
 
@@ -57,11 +58,9 @@ export const getExamByLecture = async (req, res) => {
 /* ================= UPDATE EXAM ================= */
 export const updateExam = async (req, res) => {
   try {
-    const exam = await Exam.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const exam = await Exam.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
     res.json(exam);
   } catch (err) {
