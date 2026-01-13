@@ -51,7 +51,7 @@ export const updateUserProfile = async (req, res) => {
 
     if (name) updateData.name = name;
     if (username) updateData.username = username;
-    if (image) updateData.avatarId = avatarId;
+    if (avatarId) updateData.avatarId = avatarId;
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ message: "No data provided to update" });
@@ -74,19 +74,20 @@ export const updateUserProfile = async (req, res) => {
  * @route PUT /api/users/id/level
  * @param id - User ID
  */
+// backend/controllers/userController.js
 export const updateUserLevel = async (req, res) => {
   try {
     const { id } = req.params;
-    const { level } = req.body;
+    const { level } = req.body; 
 
     const LEVEL_ORDER = ["Basic", "N5", "N4", "N3", "N2", "N1", "Business"];
-
     const targetIndex = LEVEL_ORDER.indexOf(level);
-    if (targetIndex === -1)
-      return res.status(400).json({ message: "Invalid level" });
+    
+    if (targetIndex === -1) return res.status(400).json({ message: "Invalid level" });
+
+    await User.findByIdAndUpdate(id, { $set: { "level.passed": [] } });
 
     const newPassedArray = LEVEL_ORDER.slice(0, targetIndex + 1);
-
     const nextLevel = LEVEL_ORDER[targetIndex + 1] || level;
 
     const user = await User.findByIdAndUpdate(
@@ -100,7 +101,7 @@ export const updateUserLevel = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    res.json({ message: "Success", user });
+    res.json({ message: "Database wiped and updated successfully", user });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
