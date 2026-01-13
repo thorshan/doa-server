@@ -30,6 +30,7 @@ const UserSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Image",
     },
+    avatarId: { type: Number, default: 1 },
     level: {
       passed: {
         type: [String],

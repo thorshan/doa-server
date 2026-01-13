@@ -45,13 +45,13 @@ export const getUserData = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, username, image } = req.body;
+    const { name, username, avatarId } = req.body;
 
     const updateData = {};
 
     if (name) updateData.name = name;
     if (username) updateData.username = username;
-    if (image) updateData.image = image;
+    if (image) updateData.avatarId = avatarId;
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ message: "No data provided to update" });
