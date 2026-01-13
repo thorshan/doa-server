@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import {sendEmail} from "../utils/sendEmail.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 /**
  * @description Get user profile by ID
@@ -77,42 +77,43 @@ export const updateUserProfile = async (req, res) => {
 export const updateUserLevel = async (req, res) => {
   try {
     const { id } = req.params;
-    const { level } = req.body;
+    const { level } = req.body; // The level the user just finished/passed
 
     if (req.user.id !== id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     const levels = ["Basic", "N5", "N4", "N3", "N2", "N1", "Business"];
-    const currentIndex = levels.indexOf(level) + 1;
-    const current = levels[currentIndex];
 
+    // 1. Find the current user first to get their existing passed levels
+    const currentUser = await User.findById(id);
+    if (!currentUser)
+      return res.status(404).json({ message: "User not found" });
+
+    // 2. Add the new level and SORT based on our levels array
+    // This prevents the ["Basic", "N1", "N5"] mess
+    let updatedPassed = [...new Set([...currentUser.level.passed, level])];
+    updatedPassed.sort((a, b) => levels.indexOf(a) - levels.indexOf(b));
+
+    // 3. Determine the NEXT level for "current"
+    const targetIdx = levels.indexOf(level);
+    const nextLevel = levels[targetIdx + 1] || level; // Default to current if at "Business"
+
+    // 4. Update the user using $set for the whole object to maintain order
     const user = await User.findByIdAndUpdate(
       id,
       {
-        $addToSet: {
-          "level.passed": level,
-        },
         $set: {
-          "level.current": current,
+          "level.passed": updatedPassed,
+          "level.current": nextLevel,
         },
       },
       { new: true, runValidators: true }
     );
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json({
-      message: "User level updated successfully",
-      user,
-    });
+    res.json({ message: "User level updated successfully", user });
   } catch (error) {
-    res.status(500).json({
-      message: "Server error",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
