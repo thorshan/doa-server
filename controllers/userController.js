@@ -77,41 +77,30 @@ export const updateUserProfile = async (req, res) => {
 export const updateUserLevel = async (req, res) => {
   try {
     const { id } = req.params;
-    const { level } = req.body; // The level the user just finished/passed
+    const { level } = req.body;
 
-    if (req.user.id !== id) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+    const LEVEL_ORDER = ["Basic", "N5", "N4", "N3", "N2", "N1", "Business"];
 
-    const levels = ["Basic", "N5", "N4", "N3", "N2", "N1", "Business"];
+    const targetIndex = LEVEL_ORDER.indexOf(level);
+    if (targetIndex === -1)
+      return res.status(400).json({ message: "Invalid level" });
 
-    // 1. Find the current user first to get their existing passed levels
-    const currentUser = await User.findById(id);
-    if (!currentUser)
-      return res.status(404).json({ message: "User not found" });
+    const newPassedArray = LEVEL_ORDER.slice(0, targetIndex + 1);
 
-    // 2. Add the new level and SORT based on our levels array
-    // This prevents the ["Basic", "N1", "N5"] mess
-    let updatedPassed = [...new Set([...currentUser.level.passed, level])];
-    updatedPassed.sort((a, b) => levels.indexOf(a) - levels.indexOf(b));
+    const nextLevel = LEVEL_ORDER[targetIndex + 1] || level;
 
-    // 3. Determine the NEXT level for "current"
-    const targetIdx = levels.indexOf(level);
-    const nextLevel = levels[targetIdx + 1] || level; // Default to current if at "Business"
-
-    // 4. Update the user using $set for the whole object to maintain order
     const user = await User.findByIdAndUpdate(
       id,
       {
         $set: {
-          "level.passed": updatedPassed,
+          "level.passed": newPassedArray,
           "level.current": nextLevel,
         },
       },
       { new: true, runValidators: true }
     );
 
-    res.json({ message: "User level updated successfully", user });
+    res.json({ message: "Success", user });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
