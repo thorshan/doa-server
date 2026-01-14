@@ -37,9 +37,9 @@ export const getSpeakings = async (req, res) => {
 export const getSpeakingById = async (req, res) => {
   try {
     const speaking = await Speaking.findById(req.params.id)
-      .populate("level", "title")
-      .populate("relatedKanji", "character meaning")
-      .populate("relatedVocabulary", "word meaning");
+      .populate("level")
+      .populate("relatedKanji")
+      .populate("relatedVocabulary");
 
     if (!speaking) {
       return res.status(404).json({ message: "Kaiwa not found" });
