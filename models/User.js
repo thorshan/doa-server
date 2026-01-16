@@ -24,9 +24,9 @@ const UserSchema = new mongoose.Schema(
       index: true,
     },
 
-    image: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Image",
+    picture: {
+      type: String,
+      trim: true,
     },
 
     avatarId: { type: Number, default: 1 },
@@ -38,9 +38,19 @@ const UserSchema = new mongoose.Schema(
       index: true,
     },
 
+    level: {
+      passed: {
+        type: [String],
+        default: [],
+      },
+      current: {
+        type: String,
+      },
+    },
+
     isActive: { type: Boolean, default: true },
 
-    isEmailVerified: { type: Boolean, default: true }, 
+    isEmailVerified: { type: Boolean, default: true },
 
     lastLogin: Date,
   },

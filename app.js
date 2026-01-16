@@ -2,16 +2,11 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import cors from "cors";
-import path from "path";
-import { fileURLToPath } from "url";
-const app = express();
 
-// Upload Config
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { connectDb } from "./config/database.js";
 
+// Routes
 import authRoute from "./routes/authRoutes.js";
-import imageRoute from "./routes/imageRoute.js";
 import cardRoute from "./routes/cardRoutes.js";
 import userRoute from "./routes/userRoutes.js";
 import levelRoutes from "./routes/levelRoutes.js";
@@ -28,18 +23,17 @@ import questionRoutes from "./routes/questionRoutes.js";
 import vocabularyRoutes from "./routes/vocabularyRoutes.js";
 import userProgressRoutes from "./routes/userProgressRoutes.js";
 
-
-import { connectDb } from "./config/database.js";
+// Connect Database
 connectDb();
 
-app.use(cors());
-const uploadPath = path.join(__dirname, "uploads");
-app.use("/uploads", express.static(uploadPath));
-app.use("/api/images", imageRoute);
+const app = express();
 
+// Middleware
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// API Routes
 app.use("/api/auth", authRoute);
 app.use("/api", cardRoute);
 app.use("/api/users", userRoute);
@@ -56,6 +50,5 @@ app.use("/api/exams/attempt", examAttemptRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/grammars", grammarRoutes);
 app.use("/api/user-progress", userProgressRoutes);
-
 
 export default app;
