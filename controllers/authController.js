@@ -1,76 +1,71 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import { OAuth2Client } from "google-auth-library";
 import TokenBlacklist from "../models/TokenBlacklist.js";
 
+const client = new OAuth2Client(process.env.GOOGLE_WEB_CLIENT_ID);
+
 /**
- * @description Generate Token Func
- * @returns token
+ * @description Generate JWT Token
  */
 const createToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES,
+    expiresIn: process.env.JWT_EXPIRES || "7d",
   });
 
 /**
- * @description Register Function
- * @route POST api/register
+ * @description Google Login / Register
+ * @route POST /api/auth/google
  */
-export const register = async (req, res) => {
+export const googleAuth = async (req, res) => {
   try {
-    const { name, email, username, password, level, avatarId } = req.body;
-    const existing = await User.findOne({ email });
-    if (existing) res.status(402).json({ message: "User Already Exist." });
-    const hashPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({
-      name,
-      email,
-      username,
-      level,
-      password: hashPassword,
-      avatarId,
-    });
-    const token = createToken(user._id);
-    res.json({
-      message: "User registered",
-      user,
-      token,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: "Register failed", error });
-  }
-};
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ message: "No token provided" });
 
-/**
- * @description Login Function
- * @route POST api/login
- */
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email }).populate("image");
-    if (!user) return res.status(401).json({ message: "User not found" });
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: "Invalid Credientials" });
-    const token = createToken(user._id);
-    return res.json({
+    // Verify Google ID token
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_WEB_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    // Find existing user
+    let user = await User.findOne({ googleId: payload.sub }).populate("image");
+
+    // Create new user if not found
+    if (!user) {
+      user = await User.create({
+        name: payload.name,
+        email: payload.email,
+        googleId: payload.sub,
+        lastLogin: new Date(),
+      });
+    } else {
+      // Update last login
+      user.lastLogin = new Date();
+      await user.save();
+    }
+
+    // Generate JWT
+    const jwtToken = createToken(user._id);
+
+    res.json({
       message: "Login Success",
       user,
-      token,
+      token: jwtToken,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Login failed", error });
+    console.error(error);
+    res.status(401).json({ message: "Invalid Google token", error });
   }
 };
 
 /**
- * @description Logout Function
- * @route POST api/logout
+ * @description Logout Function (optional)
+ * @route POST /api/auth/logout
  */
 export const logout = async (req, res) => {
   const authHeader = req.headers.authorization;
-
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(400).json({ message: "Invalid Authorization header" });
   }
@@ -79,12 +74,7 @@ export const logout = async (req, res) => {
 
   try {
     const decoded = jwt.decode(token);
-
-    if (new Date(decoded.exp * 1000) < new Date()) {
-      return res.json({
-        message: "Logout successfully (token already expired)",
-      });
-    }
+    if (!decoded) return res.status(400).json({ message: "Invalid token" });
 
     const expiredAt = new Date(decoded.exp * 1000);
     await TokenBlacklist.create({ token, expiredAt });
