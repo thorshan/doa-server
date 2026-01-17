@@ -1,51 +1,96 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import { OAuth2Client } from "google-auth-library";
+import bcrypt from "bcrypt";
+import TokenBlacklist from "../models/TokenBlacklist.js";
 
-const client = new OAuth2Client(process.env.GOOGLE_WEB_CLIENT_ID);
+/**
+ * @description Generate Token Func
+ * @returns token
+ */
+const createToken = (id) =>
+  jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES,
+  });
 
-export const googleLogin = async (req, res) => {
+/**
+ * @description Register Function
+ * @route POST api/register
+ */
+export const register = async (req, res) => {
   try {
-    const { token } = req.body;
-    if (!token) return res.status(400).json({ message: "Token is required" });
-
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      // Verify against all platforms
-      audience: [
-        process.env.GOOGLE_WEB_CLIENT_ID,
-        process.env.GOOGLE_ANDROID_CLIENT_ID,
-      ],
+    const { name, email, username, password, level, avatarId } = req.body;
+    const existing = await User.findOne({ email });
+    if (existing) res.status(402).json({ message: "User Already Exist." });
+    const hashPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      email,
+      username,
+      level,
+      password: hashPassword,
+      avatarId,
     });
+    const token = createToken(user._id);
+    res.json({
+      message: "User registered",
+      user,
+      token,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Register failed", error });
+  }
+};
 
-    const payload = ticket.getPayload();
-    const { sub: googleId, email, name, picture, email_verified } = payload;
+/**
+ * @description Login Function
+ * @route POST api/login
+ */
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email }).populate("image");
+    if (!user) return res.status(401).json({ message: "User not found" });
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid Credientials" });
+    const token = createToken(user._id);
+    return res.json({
+      message: "Login Success",
+      user,
+      token,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Login failed", error });
+  }
+};
 
-    // "Upsert" logic: Find by Google ID, or create new
-    let user = await User.findOneAndUpdate(
-      { googleId },
-      { 
-        $set: { 
-          name, 
-          email, 
-          picture, 
-          isEmailVerified: email_verified,
-          lastLogin: new Date() 
-        } 
-      },
-      { new: true, upsert: true }
-    );
+/**
+ * @description Logout Function
+ * @route POST api/logout
+ */
+export const logout = async (req, res) => {
+  const authHeader = req.headers.authorization;
 
-    // Generate YOUR backend JWT
-    const backendToken = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(400).json({ message: "Invalid Authorization header" });
+  }
 
-    res.json({ token: backendToken, user });
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.decode(token);
+
+    if (new Date(decoded.exp * 1000) < new Date()) {
+      return res.json({
+        message: "Logout successfully (token already expired)",
+      });
+    }
+
+    const expiredAt = new Date(decoded.exp * 1000);
+    await TokenBlacklist.create({ token, expiredAt });
+
+    res.json({ message: "Logout successfully, token invalidated" });
   } catch (err) {
-    console.error("Auth Error:", err.message);
-    res.status(401).json({ message: "Invalid Google token" });
+    res.status(500).json({ message: "Logout failed", error: err.message });
   }
 };
