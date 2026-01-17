@@ -9,7 +9,7 @@ import { sendEmail } from "../utils/sendEmail.js";
 export const getUserProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId).populate("image");
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -27,7 +27,7 @@ export const getUserProfile = async (req, res) => {
 export const getUserData = async (req, res) => {
   try {
     const userId = req.user.id;
-    const user = await User.findById(userId).populate("image");
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
