@@ -1,19 +1,22 @@
 import express from "express";
 import {
-  createSpeaking,
-  getSpeakings,
+  getAllSpeaking,
   getSpeakingById,
+  createSpeaking,
   updateSpeaking,
-  deleteSpeaking,
+  deleteSpeaking
 } from "../controllers/speakingController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getSpeakings);
-router.get("/:id", authMiddleware, getSpeakingById);
-router.post("/", authMiddleware, createSpeaking);
-router.put("/:id", authMiddleware, updateSpeaking);
-router.delete("/:id", authMiddleware, deleteSpeaking);
+// Base path: /api/speaking
+router.route("/")
+  .get(getAllSpeaking)
+  .post(createSpeaking);
+
+router.route("/:id")
+  .get(getSpeakingById)
+  .put(updateSpeaking)
+  .delete(deleteSpeaking);
 
 export default router;

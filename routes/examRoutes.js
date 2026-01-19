@@ -1,21 +1,22 @@
 import express from "express";
 import {
-  getAllExams,
-  getExam,
   createExam,
+  getExams,
+  getExamById,
   updateExam,
   deleteExam,
-  getExamByLecture,
 } from "../controllers/examController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, createExam);
-router.get("/", authMiddleware, getAllExams);
-router.get("/:id", authMiddleware, getExam);
-router.get("/lectures/:id", authMiddleware, getExamByLecture);
-router.put("/:id", authMiddleware, updateExam);
-router.delete("/:id", authMiddleware, deleteExam);
+// Path: /api/exams
+router.route("/")
+  .get(getExams)        
+  .post(createExam);   
+// Path: /api/exams/:id
+router.route("/:id")
+  .get(getExamById)     
+  .put(updateExam)
+  .delete(deleteExam);
 
 export default router;

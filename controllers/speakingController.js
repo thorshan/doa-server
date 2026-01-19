@@ -1,96 +1,71 @@
 import Speaking from "../models/Speaking.js";
 
-/* ================= CREATE ================= */
-export const createSpeaking = async (req, res) => {
+// @desc    Get all speaking entries
+export const getAllSpeaking = async (req, res) => {
   try {
-    const speaking = await Speaking.create(req.body);
-    res.status(201).json(speaking);
+    const speakings = await Speaking.find()
+      .populate("level", "code")
+      .populate("chapter", "index")
+      .populate("relatedKanji")
+      .populate("relatedGrammar")
+      .populate("relatedVocabulary")
+      .sort({ chapter: 1 });
+    res.status(200).json(speakings);
   } catch (error) {
-    res.status(400).json({
-      message: "Failed to create Kaiwa",
-      error: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
-/* ================= READ (LIST) ================= */
-export const getSpeakings = async (req, res) => {
-  try {
-    const { level } = req.query;
-
-    const filter = level ? { level } : {};
-
-    const speakings = await Speaking.find(filter)
-      .select("title description level createdAt")
-      .sort({ createdAt: -1 });
-
-    res.json(speakings);
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch Kaiwa list",
-      error: error.message,
-    });
-  }
-};
-
-/* ================= READ (SINGLE) ================= */
+// @desc    Get single speaking entry by ID with full details
 export const getSpeakingById = async (req, res) => {
   try {
     const speaking = await Speaking.findById(req.params.id)
       .populate("level")
+      .populate("chapter")
       .populate("relatedKanji")
-      .populate("relatedVocabulary")
-      .populate("relatedGrammar");
+      .populate("relatedGrammar")
+      .populate("relatedVocabulary");
 
-    if (!speaking) {
-      return res.status(404).json({ message: "Kaiwa not found" });
-    }
-
-    res.json(speaking);
+    if (!speaking) return res.status(404).json({ message: "Not Found" });
+    res.status(200).json(speaking);
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch Kaiwa",
-      error: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
-/* ================= UPDATE ================= */
+// @desc    Create a new speaking entry
+export const createSpeaking = async (req, res) => {
+  try {
+    const newSpeaking = new Speaking(req.body);
+    const savedSpeaking = await newSpeaking.save();
+    res.status(201).json(savedSpeaking);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// @desc    Update a speaking entry
 export const updateSpeaking = async (req, res) => {
   try {
-    const speaking = await Speaking.findByIdAndUpdate(
+    const updatedSpeaking = await Speaking.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { $set: req.body },
       { new: true, runValidators: true }
     );
-
-    if (!speaking) {
-      return res.status(404).json({ message: "Kaiwa not found" });
-    }
-
-    res.json(speaking);
+    if (!updatedSpeaking) return res.status(404).json({ message: "Not Found" });
+    res.status(200).json(updatedSpeaking);
   } catch (error) {
-    res.status(400).json({
-      message: "Failed to update Kaiwa",
-      error: error.message,
-    });
+    res.status(400).json({ message: error.message });
   }
 };
 
-/* ================= DELETE ================= */
+// @desc    Delete a speaking entry
 export const deleteSpeaking = async (req, res) => {
   try {
-    const speaking = await Speaking.findByIdAndDelete(req.params.id);
-
-    if (!speaking) {
-      return res.status(404).json({ message: "Kaiwa not found" });
-    }
-
-    res.json({ message: "Kaiwa deleted successfully" });
+    const deleted = await Speaking.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: "Not Found" });
+    res.status(200).json({ message: "Speaking entry deleted successfully" });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to delete Kaiwa",
-      error: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };

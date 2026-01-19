@@ -1,75 +1,65 @@
 import Question from "../models/Question.js";
-import Exam from "../models/Exam.js";
 
-/* ================= CREATE QUESTION ================= */
+// CREATE
 export const createQuestion = async (req, res) => {
   try {
     const question = await Question.create(req.body);
-
-    await Exam.findByIdAndUpdate(
-      question.exam,
-      { $push: { questions: question._id } }
-    );
-
-    res.status(201).json(question);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(201).json({ success: true, data: question });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-/* ================= GET ALL QUESTIONS ================= */
-export const getAllQuestions = async (req, res) => {
+// GET ALL (Filter by Level or Category)
+export const getQuestions = async (req, res) => {
   try {
-    const questions = await Question.find().populate("exam")
-      .sort({ createdAt: 1 });
+    const { levelId, category } = req.query;
+    const filter = {};
+    if (levelId) filter.level = levelId;
+    if (category) filter.category = category;
 
-    res.json(questions);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const data = await Question.find(filter)
+      .populate("level", "code")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, count: data.length, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/* ================= GET QUESTIONS BY EXAM ================= */
-export const getQuestionsByExam = async (req, res) => {
+// GET BY ID
+export const getQuestionById = async (req, res) => {
   try {
-    const questions = await Question.find({ exam: req.params.examId })
-      .sort({ createdAt: 1 });
-
-    res.json(questions);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const item = await Question.findById(req.params.id).populate("level");
+    if (!item) return res.status(404).json({ success: false, message: "Not found" });
+    res.status(200).json({ success: true, data: item });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/* ================= UPDATE QUESTION ================= */
+// UPDATE
 export const updateQuestion = async (req, res) => {
   try {
-    const question = await Question.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-
-    res.json(question);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    const item = await Question.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!item) return res.status(404).json({ success: false, message: "Not found" });
+    res.status(200).json({ success: true, data: item });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-/* ================= DELETE QUESTION ================= */
+// DELETE
 export const deleteQuestion = async (req, res) => {
   try {
-    const question = await Question.findById(req.params.id);
-
-    await Exam.findByIdAndUpdate(
-      question.exam,
-      { $pull: { questions: question._id } }
-    );
-
-    await question.deleteOne();
-
-    res.json({ message: "Question deleted" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const item = await Question.findByIdAndDelete(req.params.id);
+    if (!item) return res.status(404).json({ success: false, message: "Not found" });
+    res.status(200).json({ success: true, message: "Deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

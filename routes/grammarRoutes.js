@@ -1,19 +1,24 @@
-import express from "express";
-import {
-  getAllGrammar,
+import express from 'express';
+import { 
+  createGrammar, 
+  getGrammars, 
   getGrammarById,
-  createGrammar,
-  updateGrammar,
-  deleteGrammar,
-} from "../controllers/grammarController.js";
-import { authMiddleware } from "../middleware/authMiddleware.js";
+  updateGrammar, 
+  deleteGrammar 
+} from '../controllers/grammarController.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getAllGrammar);
-router.get("/:id", authMiddleware, getGrammarById);
-router.post("/", authMiddleware, createGrammar);
-router.put("/:id", authMiddleware, updateGrammar);
-router.delete("/:id", authMiddleware, deleteGrammar);
+// General routes
+router.route('/')
+  .get(getGrammars)
+  .post(authMiddleware, createGrammar);
+
+// Specific ID routes
+router.route('/:id')
+  .get(getGrammarById)
+  .patch(authMiddleware, updateGrammar)
+  .delete(authMiddleware, deleteGrammar);
 
 export default router;

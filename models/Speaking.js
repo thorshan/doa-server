@@ -32,6 +32,11 @@ const speakingSchema = new mongoose.Schema(
       ref: "Level",
       required: true,
     },
+    chapter:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Chapter",
+      required: true,
+    },
     title: {
       type: String,
       required: true,

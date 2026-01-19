@@ -1,81 +1,69 @@
 import Exam from "../models/Exam.js";
-import Question from "../models/Question.js";
 
-/* ================= CREATE EXAM ================= */
+// CREATE
 export const createExam = async (req, res) => {
   try {
     const exam = await Exam.create(req.body);
-    res.status(201).json(exam);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(201).json({ success: true, data: exam });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-/* ================= GET ALL EXAMS ================= */
-export const getAllExams = async (req, res) => {
+// GET ALL
+export const getExams = async (req, res) => {
   try {
-    const exams = await Exam.find()
-      .populate("questions")
-      .populate("level module")
-      .sort({ createdAt: 1 });
+    const { levelId, examType } = req.query;
+    const filter = {};
+    if (levelId) filter.level = levelId;
+    if (examType) filter.examType = examType;
 
-    res.json(exams);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const data = await Exam.find(filter)
+      .populate("level", "code")
+      .populate("questions", "text category")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, count: data.length, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/* ================= GET SINGLE EXAM ================= */
-export const getExam = async (req, res) => {
+// GET BY ID
+export const getExamById = async (req, res) => {
   try {
-    const exam = await Exam.findById(req.params.id)
-      .populate("questions")
-      .populate("level module");
+    const item = await Exam.findById(req.params.id)
+      .populate("level")
+      .populate("questions"); // Full question data for the test-taking UI
 
-    if (!exam) return res.status(404).json({ message: "Exam not found" });
-
-    res.json(exam);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    if (!item) return res.status(404).json({ success: false, message: "Not found" });
+    res.status(200).json({ success: true, data: item });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/* ================= GET SINGLE EXAM ================= */
-export const getExamByLecture = async (req, res) => {
-  try {
-    const exam = await Exam.findOne({ lesson: req.params.id })
-      .populate("questions")
-      .populate("level module");
-
-    if (!exam) return res.status(404).json({ message: "Exam not found" });
-
-    res.json(exam);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-/* ================= UPDATE EXAM ================= */
+// UPDATE
 export const updateExam = async (req, res) => {
   try {
-    const exam = await Exam.findByIdAndUpdate(req.params.id, req.body, {
+    const item = await Exam.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
+      runValidators: true,
     });
-
-    res.json(exam);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+    if (!item) return res.status(404).json({ success: false, message: "Not found" });
+    res.status(200).json({ success: true, data: item });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
-/* ================= DELETE EXAM ================= */
+// DELETE
 export const deleteExam = async (req, res) => {
   try {
-    await Question.deleteMany({ exam: req.params.id });
-    await Exam.findByIdAndDelete(req.params.id);
-
-    res.json({ message: "Exam deleted" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const item = await Exam.findByIdAndDelete(req.params.id);
+    if (!item) return res.status(404).json({ success: false, message: "Not found" });
+    res.status(200).json({ success: true, message: "Deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

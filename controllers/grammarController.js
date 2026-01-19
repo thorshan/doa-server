@@ -1,63 +1,91 @@
 import Grammar from "../models/Grammar.js";
 
-export const getAllGrammar = async (req, res) => {
-  try {
-    const grammar = await Grammar.find()
-      .populate("level")
-      .populate("relatedKanji")
-      .populate("relatedVocabulary")
-      .sort({ createdAt: 1 })
-      .lean();
-    res.json(grammar);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-export const getGrammarById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const grammar = await Grammar.findById(id)
-      .populate("level")
-      .populate("relatedKanji")
-      .populate("relatedVocabulary");
-    if (!grammar) return res.status(404).json({ error: "Not found" });
-    res.json(grammar);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
+// CREATE
 export const createGrammar = async (req, res) => {
   try {
-    const newGrammar = new Grammar(req.body);
-    await newGrammar.save();
-    res.status(201).json(newGrammar);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+    const grammar = await Grammar.create(req.body);
+    res.status(201).json({ success: true, data: grammar });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
+// READ (BY ID)
+export const getGrammarById = async (req, res) => {
+  try {
+    const grammar = await Grammar.findById(req.params.id)
+      .populate("level", "code")
+      .populate("relatedKanji")
+      .populate("chapter")
+      .populate("relatedVocab");
+
+    if (!grammar) {
+      return res.status(404).json({
+        success: false,
+        message: "Grammar point not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: grammar,
+    });
+  } catch (error) {
+    if (error.kind === "ObjectId") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid ID format" });
+    }
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// READ (All/Filter)
+export const getGrammars = async (req, res) => {
+  try {
+    const { levelId } = req.query;
+    const filter = levelId ? { level: levelId } : {};
+
+    const grammars = await Grammar.find(filter)
+      .populate("level", "code")
+      .populate("relatedKanji")
+      .populate("relatedVocab")
+      .populate("chapter")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: grammars.length,
+      data: grammars,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// UPDATE
 export const updateGrammar = async (req, res) => {
   try {
-    const { id } = req.params;
-    const updated = await Grammar.findByIdAndUpdate(id, req.body, {
+    const grammar = await Grammar.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
+      runValidators: true,
     });
-    if (!updated) return res.status(404).json({ error: "Not found" });
-    res.json(updated);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+    if (!grammar)
+      return res.status(404).json({ success: false, message: "Not found" });
+    res.status(200).json({ success: true, data: grammar });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
+// DELETE
 export const deleteGrammar = async (req, res) => {
   try {
-    const { id } = req.params;
-    const deleted = await Grammar.findByIdAndDelete(id);
-    if (!deleted) return res.status(404).json({ error: "Not found" });
-    res.json({ message: "Deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const grammar = await Grammar.findByIdAndDelete(req.params.id);
+    if (!grammar)
+      return res.status(404).json({ success: false, message: "Not found" });
+    res.status(200).json({ success: true, message: "Deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

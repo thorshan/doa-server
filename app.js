@@ -12,7 +12,6 @@ import userRoute from "./routes/userRoutes.js";
 import levelRoutes from "./routes/levelRoutes.js";
 import moduleRoutes from "./routes/moduleRoutes.js";
 import kanjiRoutes from "./routes/kanjiRoutes.js";
-import lessonRoutes from "./routes/lessonRoutes.js";
 import grammarRoutes from "./routes/grammarRoutes.js";
 import listeningRoutes from "./routes/listeningRoutes.js";
 import readingRoutes from "./routes/readingRoutes.js";
@@ -22,6 +21,10 @@ import examAttemptRoutes from "./routes/examAttemptRoutes.js";
 import questionRoutes from "./routes/questionRoutes.js";
 import vocabularyRoutes from "./routes/vocabularyRoutes.js";
 import userProgressRoutes from "./routes/userProgressRoutes.js";
+import chapterRoutes from "./routes/chapterRoutes.js";
+import renshuuARoutes from "./routes/renshuuARoutes.js";
+import renshuuBRoutes from "./routes/renshuuBRoutes.js";
+import renshuuCRoutes from "./routes/renshuuCRoutes.js";
 
 // Connect Database
 connectDb();
@@ -40,7 +43,6 @@ app.use("/api/users", userRoute);
 app.use("/api/levels", levelRoutes);
 app.use("/api/modules", moduleRoutes);
 app.use("/api/kanji", kanjiRoutes);
-app.use("/api/lessons", lessonRoutes);
 app.use("/api/vocabularies", vocabularyRoutes);
 app.use("/api/readings", readingRoutes);
 app.use("/api/listenings", listeningRoutes);
@@ -50,5 +52,9 @@ app.use("/api/exams/attempt", examAttemptRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/grammars", grammarRoutes);
 app.use("/api/user-progress", userProgressRoutes);
+app.use("/api/chapters", chapterRoutes);
+app.use("/api/renshuuA", renshuuARoutes);
+app.use("/api/renshuuB", renshuuBRoutes);
+app.use("/api/renshuuC", renshuuCRoutes);
 
 export default app;

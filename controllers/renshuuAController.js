@@ -1,25 +1,26 @@
-import Module from "../models/Module.js";
+import RenshuuA from "../models/RenshuuA.js";
 
 // CREATE
-export const createModule = async (req, res) => {
+export const createRenshuuA = async (req, res) => {
   try {
-    const module = await Module.create(req.body);
-    res.status(201).json({ success: true, data: module });
+    const renshuuA = await RenshuuA.create(req.body);
+    res.status(201).json({ success: true, data: renshuuA });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
   }
 };
 
-// GET ALL (With optional Level filtering)
-export const getModules = async (req, res) => {
+// GET ALL (Filter by Chapter)
+export const getRenshuuA = async (req, res) => {
   try {
-    const { levelId } = req.query;
-    const filter = levelId ? { level: levelId } : {};
+    const { chapterId } = req.query;
+    const filter = chapterId ? { chapter: chapterId } : {};
 
-    const data = await Module.find(filter)
+    const data = await RenshuuA.find(filter)
+      .populate("chapter")
       .populate("level")
-      .populate("chapters")
-      .populate("exam")
+      .populate("relatedKanji")
+      .populate("relatedVocab")
       .sort({ createdAt: 1 });
 
     res.status(200).json({ success: true, count: data.length, data });
@@ -29,12 +30,13 @@ export const getModules = async (req, res) => {
 };
 
 // GET BY ID
-export const getModuleById = async (req, res) => {
+export const getRenshuuAById = async (req, res) => {
   try {
-    const item = await Module.findById(req.params.id)
+    const item = await RenshuuA.findById(req.params.id)
+      .populate("chapter")
       .populate("level")
-      .populate("chapters")
-      .populate("exam");
+      .populate("relatedKanji")
+      .populate("relatedVocab");
 
     if (!item)
       return res.status(404).json({ success: false, message: "Not found" });
@@ -45,9 +47,9 @@ export const getModuleById = async (req, res) => {
 };
 
 // UPDATE
-export const updateModule = async (req, res) => {
+export const updateRenshuuA = async (req, res) => {
   try {
-    const item = await Module.findByIdAndUpdate(req.params.id, req.body, {
+    const item = await RenshuuA.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
@@ -60,9 +62,9 @@ export const updateModule = async (req, res) => {
 };
 
 // DELETE
-export const deleteModule = async (req, res) => {
+export const deleteRenshuuA = async (req, res) => {
   try {
-    const item = await Module.findByIdAndDelete(req.params.id);
+    const item = await RenshuuA.findByIdAndDelete(req.params.id);
     if (!item)
       return res.status(404).json({ success: false, message: "Not found" });
     res.status(200).json({ success: true, message: "Deleted" });
