@@ -19,7 +19,7 @@ const createToken = (id) =>
 export const register = async (req, res) => {
   try {
     const { name, email, username, password, level, avatarId } = req.body;
-    const existing = await User.findOne({ email });
+    const existing = await User.findOne({ email }).populate("level");
     if (existing) res.status(402).json({ message: "User Already Exist." });
     const hashPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
@@ -48,7 +48,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate("level");
     if (!user) return res.status(401).json({ message: "User not found" });
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
