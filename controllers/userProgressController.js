@@ -1,42 +1,40 @@
 import UserProgress from "../models/userProgress.js";
 
 /**
- * GET user progress for all lectures
- * Used to lock/unlock chapters
+ * GET all progress records for the current user
  */
 export const getUserProgress = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const progress = await UserProgress.find({ user: userId }).select(
-      "lecture testPassed score passedAt"
-    );
+    const progress = await UserProgress.find({ user: userId })
+      .populate("chapter", "title name") // Populating chapter info for the UI
+      .select("chapter testPassed score passedAt");
 
-    res.json(progress);
+    res.json({ success: true, data: progress });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch user progress" });
+    res.status(500).json({ success: false, message: "Failed to fetch user progress" });
   }
 };
 
 /**
- * Mark lecture test as passed
- * Call AFTER user finishes test
+ * Save or Update Chapter Progress
  */
-export const markLecturePassed = async (req, res) => {
+export const markChapterPassed = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { lecture, score } = req.body;
+    const { chapterId, score, testPassed } = req.body;
 
-    if (!lecture) {
-      return res.status(400).json({ message: "Lecture is required" });
+    if (!chapterId) {
+      return res.status(400).json({ success: false, message: "Chapter ID is required" });
     }
 
     const progress = await UserProgress.findOneAndUpdate(
-      { user: userId, lecture },
+      { user: userId, chapter: chapterId },
       {
-        testPassed: true,
-        score,
-        passedAt: new Date(),
+        testPassed: testPassed ?? true,
+        score: score || 0,
+        passedAt: testPassed ? new Date() : undefined,
       },
       {
         upsert: true,
@@ -45,33 +43,35 @@ export const markLecturePassed = async (req, res) => {
     );
 
     res.json({
-      message: "Lecture test marked as passed",
-      progress,
+      success: true,
+      message: "Progress updated successfully",
+      data: progress,
     });
   } catch (error) {
-    res.status(500).json({ message: "Failed to update progress" });
+    res.status(500).json({ success: false, message: "Failed to update progress" });
   }
 };
 
 /**
- * Get user latest progress
+ * Get User's Latest Progress (For "Continue" button)
  */
 export const getLatestProgress = async (req, res) => {
   try {
-    const progress = await UserProgress.findOne({
-      user: req.params.id,
-      testPassed: true,
-    })
-      .sort({ passedAt: -1 })
-      .populate("lecture");
+    const userId = req.user.id; 
+
+    const progress = await UserProgress.findOne({ user: userId })
+      .sort({ updatedAt: -1 }) 
+      .populate({
+        path: "chapter",
+        populate: { path: "module", select: "name" } 
+      });
 
     if (!progress) {
-      return res.json(null);
+      return res.json({ success: true, data: null });
     }
 
-    res.json(progress);
+    res.json({ success: true, data: progress });
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch progress" });
+    res.status(500).json({ success: false, message: "Failed to fetch latest progress" });
   }
 };
-
