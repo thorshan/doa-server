@@ -59,7 +59,7 @@ export const markLecturePassed = async (req, res) => {
 export const getLatestProgress = async (req, res) => {
   try {
     const progress = await UserProgress.findOne({
-      user: req.user.id,
+      user: req.params.id,
       testPassed: true,
     })
       .sort({ passedAt: -1 })
