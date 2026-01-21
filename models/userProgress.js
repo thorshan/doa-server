@@ -9,9 +9,9 @@ const userProgressSchema = new mongoose.Schema(
       index: true,
     },
 
-    lecture: {
+    chapter: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Lesson",
+      ref: "Chapter",
       required: true,
     },
 
@@ -32,6 +32,6 @@ const userProgressSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userProgressSchema.index({ user: 1, lecture: 1 }, { unique: true });
+userProgressSchema.index({ user: 1, chapter: 1 }, { unique: true });
 
 export default mongoose.model("UserProgress", userProgressSchema);
