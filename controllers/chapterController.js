@@ -36,6 +36,7 @@ export const getChapters = async (req, res) => {
       .populate("grammars")
       .populate("renshuuA")
       .populate("renshuuB")
+      .populate("speaking")
       .sort({ index: 1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -78,6 +79,14 @@ export const getFullChapter = async (req, res) => {
       .populate({
         path: "renshuuC",
         populate: [{ path: "relatedKanji" }, { path: "relatedVocab" }],
+      })
+      .populate({
+        path: "speaking",
+        populate: [
+          { path: "relatedKanji" },
+          { path: "relatedVocab" },
+          { path: "relatedGrammar" },
+        ],
       });
 
     if (!chapter) {
