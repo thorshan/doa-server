@@ -12,26 +12,48 @@ const userProgressSchema = new mongoose.Schema(
     chapter: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Chapter",
-      required: true,
+      required: false,
     },
 
-    testPassed: {
+    isLevelExam: {
       type: Boolean,
-      default: false,
+      default: false, 
+    },
+    levelTag: {
+      type: String,
+      enum: ["Basic", "N5", "N4", "N3", "N2", "N1", "Business"],
+      index: true,
+    },
+    // -------------------------------
+
+    completedModules: {
+      grammar: { type: Boolean, default: false },
+      speaking: { type: Boolean, default: false },
+      renshuuA: { type: Boolean, default: false },
+      renshuuB: { type: Boolean, default: false },
+      renshuuC: { type: Boolean, default: false },
     },
 
-    score: {
-      type: Number,
-      default: 0,
-    },
+    testPassed: { type: Boolean, default: false },
+    score: { type: Number, default: 0 },
 
-    passedAt: {
-      type: Date,
-    },
+    attempts: [
+      {
+        score: Number,
+        totalQuestions: Number,
+        completedAt: { type: Date, default: Date.now },
+      },
+    ],
+
+    passedAt: { type: Date },
+    lastAccessedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
 
-userProgressSchema.index({ user: 1, chapter: 1 }, { unique: true });
+userProgressSchema.index(
+  { user: 1, chapter: 1, levelTag: 1, isLevelExam: 1 },
+  { unique: true }
+);
 
 export default mongoose.model("UserProgress", userProgressSchema);

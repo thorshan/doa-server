@@ -51,7 +51,7 @@ app.use("/api/exams", examRoutes);
 app.use("/api/exams/attempt", examAttemptRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/grammars", grammarRoutes);
-app.use("/api/user-progress", userProgressRoutes);
+app.use("/api/progress", userProgressRoutes);
 app.use("/api/chapters", chapterRoutes);
 app.use("/api/renshuuA", renshuuARoutes);
 app.use("/api/renshuuB", renshuuBRoutes);

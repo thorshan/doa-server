@@ -1,15 +1,20 @@
 import express from "express";
-import {
-  getUserProgress,
-  getLatestProgress,
-  markChapterPassed,
+import { 
+  submitTest, 
+  getUserStats, 
+  getChapterProgress 
 } from "../controllers/userProgressController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getUserProgress);
-router.post("/pass", authMiddleware, markChapterPassed);
-router.get("/latest", authMiddleware, getLatestProgress);
+// Submit a test (Chapter or Level)
+router.post("/submit-test", authMiddleware, submitTest);
+
+// Get global stats for the dashboard
+router.get("/stats", authMiddleware, getUserStats);
+
+// Get specific progress for a chapter (to show checkmarks)
+router.get("/chapter/:id", authMiddleware, getChapterProgress);
 
 export default router;

@@ -43,6 +43,12 @@ chapterSchema.virtual("renshuuC", {
   foreignField: "chapter",
 });
 
+chapterSchema.virtual("speaking", {
+  ref: "Speaking",
+  localField: "_id",
+  foreignField: "chapter",
+});
+
 const Chapter = mongoose.model("Chapter", chapterSchema);
 
 export default Chapter;
