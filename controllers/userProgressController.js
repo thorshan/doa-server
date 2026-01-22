@@ -109,3 +109,49 @@ export const submitTest = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const updateModuleStatus = async (req, res) => {
+  try {
+    const { chapterId, moduleName } = req.body;
+    const userId = req.user._id;
+
+    const updatePath = `completedModules.${moduleName}`;
+
+    const progress = await UserProgress.findOneAndUpdate(
+      { 
+        user: userId, 
+        chapter: chapterId 
+      },
+      { 
+        $set: { 
+          [updatePath]: true,
+          lastAccessedAt: Date.now() 
+        } 
+      },
+      { 
+        new: true, 
+        upsert: true 
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: progress
+    });
+
+  } catch (error) {
+    console.error("Update Module Error:", error);
+    
+    if (error.code === 11000) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Duplicate progress record." 
+      });
+    }
+
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal Server Error" 
+    });
+  }
+};
