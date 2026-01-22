@@ -84,7 +84,7 @@ export const getFullChapter = async (req, res) => {
         path: "speaking",
         populate: [
           { path: "relatedKanji" },
-          { path: "relatedVocab" },
+          { path: "relatedVocabulary" },
           { path: "relatedGrammar" },
         ],
       });
