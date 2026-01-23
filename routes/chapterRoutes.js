@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createChapter,
+  getAllChapters,
   getChapters,
   getFullChapter,
   updateChapter,
@@ -14,7 +15,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Base route: /api/chapters
-router.route("/").post(createChapter).get(getChapters);
+router.route("/").post(createChapter).get(getAllChapters).get(getChapters);
 
 // ID route: /api/chapters/:id
 router
