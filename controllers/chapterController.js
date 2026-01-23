@@ -1,4 +1,5 @@
 import Chapter from "../models/Chapter.js";
+import Level from "../models/Level.js";
 
 // @desc    Create a new chapter
 // @route   POST /api/chapters
@@ -29,9 +30,11 @@ export const createChapter = async (req, res) => {
 export const getChapters = async (req, res) => {
   try {
     const { levelId } = req.query;
-    const filter = levelId ? { level: levelId } : {};
-
-    const chapters = await Chapter.find(filter)
+    const levelDoc = await Level.findOne({ code: levelId });
+    if (!levelDoc) {
+      return res.status(404).json({ success: false, message: "Level not found" });
+    }
+    const chapters = await Chapter.find({level: levelDoc._id} )
       .populate("level", "code")
       .populate("grammars")
       .populate("renshuuA")
