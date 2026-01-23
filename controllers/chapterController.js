@@ -27,14 +27,34 @@ export const createChapter = async (req, res) => {
 
 // @desc    Get all chapters (with level filter & pagination)
 // @route   GET /api/chapters
+
+// For Admin
+export const getAllChapters = async (req, res) => {
+  try {
+    const chapters = await Chapter.find({ level: levelDoc._id })
+      .populate("level", "code").sort({ index: 1})
+
+    res.status(200).json({
+      success: true,
+      count: chapters.length,
+      data: chapters,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// For App
 export const getChapters = async (req, res) => {
   try {
     const { levelId } = req.query;
     const levelDoc = await Level.findOne({ code: levelId });
     if (!levelDoc) {
-      return res.status(404).json({ success: false, message: "Level not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Level not found" });
     }
-    const chapters = await Chapter.find({level: levelDoc._id} )
+    const chapters = await Chapter.find({ level: levelDoc._id })
       .populate("level", "code")
       .populate("grammars")
       .populate("renshuuA")
