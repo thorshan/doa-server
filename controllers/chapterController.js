@@ -31,7 +31,7 @@ export const createChapter = async (req, res) => {
 // For Admin
 export const getAllChapters = async (req, res) => {
   try {
-    const chapters = await Chapter.find({ level: levelDoc._id })
+    const chapters = await Chapter.find()
       .populate("level", "code").sort({ index: 1})
 
     res.status(200).json({
