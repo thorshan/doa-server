@@ -28,7 +28,7 @@ export const createChapter = async (req, res) => {
 // @route   GET /api/chapters
 export const getChapters = async (req, res) => {
   try {
-    const { levelId, page = 1, limit = 10 } = req.query;
+    const { levelId } = req.query;
     const filter = levelId ? { level: levelId } : {};
 
     const chapters = await Chapter.find(filter)
@@ -37,20 +37,11 @@ export const getChapters = async (req, res) => {
       .populate("renshuuA")
       .populate("renshuuB")
       .populate("speaking")
-      .sort({ index: 1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit);
-
-    const total = await Chapter.countDocuments(filter);
+      .sort({ index: 1 });
 
     res.status(200).json({
       success: true,
       count: chapters.length,
-      pagination: {
-        total,
-        page: Number(page),
-        pages: Math.ceil(total / limit),
-      },
       data: chapters,
     });
   } catch (error) {
