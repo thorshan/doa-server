@@ -15,7 +15,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 // Base route: /api/chapters
-router.route("/").post(createChapter).get(getAllChapters).get(getChapters);
+router.route("/").post(createChapter).get(getChapters);
 router.get("/admin", getAllChapters);
 
 // ID route: /api/chapters/:id
