@@ -32,7 +32,7 @@ export const createChapter = async (req, res) => {
 export const getAllChapters = async (req, res) => {
   try {
     const chapters = await Chapter.find()
-      .populate("level", "code").sort({ index: 1})
+      .populate("level", "code").populate("exam", "title").sort({ index: 1})
 
     res.status(200).json({
       success: true,
@@ -56,6 +56,7 @@ export const getChapters = async (req, res) => {
     }
     const chapters = await Chapter.find({ level: levelDoc._id })
       .populate("level", "code")
+      .populate("exam")
       .populate("grammars")
       .populate("renshuuA")
       .populate("renshuuB")
@@ -78,6 +79,10 @@ export const getFullChapter = async (req, res) => {
   try {
     const chapter = await Chapter.findById(req.params.id)
       .populate("level")
+      .populate({
+        path: "exam",
+        populate: [{ path: "questions"}],
+      })
       .populate({
         path: "grammars",
         populate: [{ path: "relatedKanji" }, { path: "relatedVocab" }],

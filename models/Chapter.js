@@ -11,6 +11,10 @@ const chapterSchema = new mongoose.Schema(
       ref: "Level",
       required: [true, "A chapter must belong to a level"],
     },
+    exam: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Exam",
+    }
   },
   {
     timestamps: true,
