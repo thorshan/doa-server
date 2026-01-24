@@ -1,4 +1,4 @@
-import UserProgress from "../models/userProgressModel.js";
+import UserProgress from "../models/userProgress.js";
 
 // @desc    Get progress for a specific level
 // @route   GET /api/progress/course/:levelTag
