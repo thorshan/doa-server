@@ -5,9 +5,9 @@ import Level from "../models/Level.js";
 // @route   POST /api/chapters
 export const createChapter = async (req, res) => {
   try {
-    const { index, level } = req.body;
+    const { index, level, exam } = req.body;
 
-    const newChapter = await Chapter.create({ index, level });
+    const newChapter = await Chapter.create({ index, level, exam });
 
     res.status(201).json({
       success: true,
