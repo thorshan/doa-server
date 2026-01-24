@@ -1,13 +1,11 @@
 import express from "express";
-import { updateModuleProgress, completeChapterTest } from "../controllers/userProgressController.js";
+import { updateModuleProgress, completeChapterTest, getCourseProgress } from "../controllers/userProgressController.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Update status for grammar, speaking, renshuuA, etc.
+router.get("/course/:levelTag", authMiddleware, getCourseProgress);
 router.patch("/update-module", authMiddleware, updateModuleProgress);
-
-// Finalize chapter after passing the test
 router.post("/complete-chapter-test", authMiddleware, completeChapterTest);
 
 export default router;
