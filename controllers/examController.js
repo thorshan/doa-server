@@ -20,7 +20,7 @@ export const getExams = async (req, res) => {
 
     const data = await Exam.find(filter)
       .populate("level", "code")
-      .populate("questions", "text category")
+      .populate("questions")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, count: data.length, data });
@@ -34,8 +34,7 @@ export const getExamById = async (req, res) => {
   try {
     const item = await Exam.findById(req.params.id)
       .populate("level")
-      .populate("questions"); // Full question data for the test-taking UI
-
+      .populate("questions");
     if (!item) return res.status(404).json({ success: false, message: "Not found" });
     res.status(200).json({ success: true, data: item });
   } catch (error) {
