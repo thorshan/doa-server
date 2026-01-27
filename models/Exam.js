@@ -10,6 +10,7 @@ const examSchema = new mongoose.Schema(
         "Chapter Test",
         "Module Final",
         "Mock JLPT",
+        "Old Question",
         "Mini Quiz",
       ],
       required: true,
